@@ -64,38 +64,51 @@ print(gi)
 set.seed(2023)
 tree.gi <- aboot(gi)
 
-write.tree(tree.gi, file = "analysis/wgs2/tree_aboot_gi_fullvcf2.tree")
+#Write tree
+write.tree(tree.gi, file = "test.tree")
 
+# read tree
+tree.gi <- read.tree("test.tree")
 
 ### Split lineage
+out.node <- 1
+vdahliae.node <- 195
+lin1.node <- 313
+lin2.node <- 196
 
-ggt %>% 
+
+ggt <- tree.gi %>%
   as_tibble() %>%
-  filter(node < 194) %>% 
-  mutate(lineage = if_else(parent >= lin1.node, "L1", "L2")) %>% 
-  mutate(lineage = if_else(label == "V_alfalfae", NA_character_, lineage)) %>% 
-  select(pop = label , province, lineage) %>% 
-  write_tsv("analysis/wgs2/pop.data2.tsv")
+  left_join(., pop.data, by = c("label" = "pop")) %>%
+  mutate(province = factor(province, levels = c("AB","MB","ON","QC","NB","PEI"))) %>% 
+  as.treedata() 
 
-pop.data <- read_tsv("analysis/wgs2/pop.data2.tsv")
+lin.df <- ggt %>% 
+  as_tibble() %>% 
+  drop_na(province) %>% 
+  mutate(lineage = if_else(parent >= lin1.node, "L1","L2")) %>% 
+  dplyr::select(label, lineage, province)
 
-l1 <- pop.data %>% filter(lineage == "L1") %>% pull(pop) 
-l2 <- pop.data %>% filter(lineage == "L2") %>% pull(pop)
+
+### Build lineage specific genind
+l1 <- lin.df %>% filter(lineage == "L1") %>% pull(label) 
+l2 <- lin.df %>% filter(lineage == "L2") %>% pull(label)
 
 l1.gi <- gi[rownames(gi@tab) %in% l1 ,]
 l2.gi <- l2.gi[rownames(l2.gi@tab) %in% l2,]
 
 
 
-
+### Write lineage specific genind
 write_rds(l1.gi, "l1.genind.rds")
 write_rds(l2.gi, "l2.genind.rds")
 
 
 
 #removing loci containing NA. Takes a while
-l1.nona <- missingno(L1, cutoff = 0, type = "loci")
-
+l1.nona <- missingno(l1.gi, cutoff = 0, type = "loci")
+l2.nona <- missingno(l2.gi, cutoff = 0, type = "loci")
 
 #save nona object
 saveRDS(l1.nona, "l1.nona.RDS")
+saveRDS(l2.nona, "l2.nona.RDS")
