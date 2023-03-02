@@ -3,8 +3,8 @@
 ## Data
 
 All data is included in the data folder exept for the following large files that you can download:
-- [Link to vcf]()
-- [Link to fastq]()
+- [Link to vcf](https://datadryad.org/stash/dataset/doi:10.5061/dryad.g79cnp5v0)
+- [Link to fastq]() BioProject PRJNA890653
 
 ## Code
 
