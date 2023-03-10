@@ -21,7 +21,7 @@ popmap <- read.table("data/pop.data.tsv", header = T) %>% filter(complete.cases(
 
 #### Lineage 1 ####
 #find clusters
-l1.nona_Clust <- find.clusters(l1.nona, max.n.clust=40, n.pca=40, n.clust =3) #create BIC values versus nb of clusters plot
+l1.nona_Clust <- find.clusters(l1.nona, max.n.clust=40, n.pca=40, n.clust =3) #create BIC values versus nb of clusters plot if n.pca and n.clust parameters omitted
 
 head(l1.nona_Clust$grp, 74)#see in which group each samples are.
 head(l1.nona_Clust$size, 20)#groups sizes
@@ -73,7 +73,7 @@ b <- ggplot(layout, aes(x = x, y = y, color = province)) +
 
 #### Lineage 2 ####
 #find clusters
-l2.nona_Clust <- find.clusters(l2.nona, max.n.clust=40, n.pca=60, n.clust =6) #create BIC values versus nb of clusters plot
+l2.nona_Clust <- find.clusters(l2.nona, max.n.clust=40, n.pca=60, n.clust =6) #create BIC values versus nb of clusters plot if n.pca and n.clust parameters omitted
 
 head(l2.nona_Clust$grp, 118)#see in which group each samples are.
 head(l2.nona_Clust$size, 20)#groups sizes
