@@ -4,13 +4,15 @@ library(factoextra)
 library(poppr)
 library(ade4)
 library(tidyverse)
-
+library(ggtree)
+library(tidytree)
+library(treeio)
 
 # set ggplot theme
 theme_set(theme_bw())
 
 # path to vcf file
-vcf.path <- "../canpednet_verti/data/full_vcf/verti_wgs2_freebayes.snpeff.vcf"
+vcf.path <- "../canpednet_verti/data/full_vcf/verti_wgs_freebayes.snpeff.vcf"
 
 #creating vcfR object
 vcf.full <- read.vcfR(vcf.path)
@@ -30,18 +32,21 @@ pop.data %>%
 
 #### vcf filtering ####
 
-# remove all pop with same genotype
-var.id <- extract.gt(vcf.full, "GT") %>%
-  as_tibble(rownames = "variantid") %>%
-  filter(!if_all(-variantid, ~ .x == 0)) %>%  
-  filter(!if_all(-variantid, ~.x ==1)) %>%
+
+# remove all loci with variant QUAL of 0
+var.id.qual <- vcfR2tidy(vcf.full,info_only = TRUE)$fix %>% 
+  mutate(variantid = paste0(CHROM, "_", POS)) %>% 
+  select(variantid, QUAL) %>% 
+  filter(QUAL > 20) %>% 
   pull(variantid)
+
+
 
 var.id.full <- extract.gt(vcf.full, "GT") %>%
   as_tibble(rownames = "variantid") %>%
   pull(variantid)
 
-vcf <- vcf.full[which(var.id.full %in% var.id),]
+vcf <- vcf.full[which(var.id.full %in% var.id.qual),]
 
 
 #### vcf analysis ####
@@ -65,23 +70,31 @@ set.seed(2023)
 tree.gi <- aboot(gi)
 
 #Write tree
-write.tree(tree.gi, file = "test.tree")
+treeio::write.tree(tree.gi, file = "data/new_data/tree_aboot_gi_vcf.tree")
 
 # read tree
-tree.gi <- read.tree("test.tree")
+tree <- treeio::read.tree("data/new_data/tree_aboot_gi_vcf.tree")
 
-### Split lineage
-out.node <- 1
-vdahliae.node <- 195
-lin1.node <- 313
-lin2.node <- 196
-
-
-ggt <- tree.gi %>%
+ggt <- tree %>%
   as_tibble() %>%
   left_join(., pop.data, by = c("label" = "pop")) %>%
   mutate(province = factor(province, levels = c("AB","MB","ON","QC","NB","PEI"))) %>% 
   as.treedata() 
+
+# print node label
+ggtree(ggt) +
+  geom_text(aes(label = node), size = 3)
+
+
+### Split lineage
+vdahliae.node <- 193
+lin1.node <- 311
+lin2.node <- 194
+
+
+
+
+
 
 lin.df <- ggt %>% 
   as_tibble() %>% 
@@ -95,13 +108,13 @@ l1 <- lin.df %>% filter(lineage == "L1") %>% pull(label)
 l2 <- lin.df %>% filter(lineage == "L2") %>% pull(label)
 
 l1.gi <- gi[rownames(gi@tab) %in% l1 ,]
-l2.gi <- l2.gi[rownames(l2.gi@tab) %in% l2,]
+l2.gi <- gi[rownames(gi@tab) %in% l2,]
 
 
 
 ### Write lineage specific genind
-write_rds(l1.gi, "l1.genind.rds")
-write_rds(l2.gi, "l2.genind.rds")
+write_rds(l1.gi, "data/new_data/l1.genind.rds")
+write_rds(l2.gi, "data/new_data/l2.genind.rds")
 
 
 
@@ -109,6 +122,6 @@ write_rds(l2.gi, "l2.genind.rds")
 l1.nona <- missingno(l1.gi, cutoff = 0, type = "loci")
 l2.nona <- missingno(l2.gi, cutoff = 0, type = "loci")
 
-#save nona object
-saveRDS(l1.nona, "l1.nona.RDS")
-saveRDS(l2.nona, "l2.nona.RDS")
+#save no NA object
+write_rds(l1.nona, "data/new_data/l1.nona.RDS")
+write_rds(l2.nona, "data/new_data/l2.nona.RDS")

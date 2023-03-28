@@ -13,15 +13,15 @@ theme_set(theme_classic())
 
 map.raw <- image_read("data/map/map_Vdahliae_600dpi.tif")
 
-tree <- read.tree("data/tree/tree_aboot_gi_fullvcf2.tree")
+tree <- read.tree("data/new_data/tree_aboot_gi_vcf.tree")
 pop.data <- read_tsv(file = "data/pop.data.tsv")
 
 
 
-out.node <- 1
-vdahliae.node <- 195
-lin1.node <- 313
-lin2.node <- 196
+### Split lineage
+vdahliae.node <- 193
+lin1.node <- 311
+lin2.node <- 194
 
 
 
@@ -51,12 +51,14 @@ ggtree(ggt) +
 
 
 
-### Only V.dahliae
-tree.vdah <- tree_subset(ggt, node = vdahliae.node, levels_back = 0)
+### Full tree
 
-p.vdah <- ggtree(tree.vdah)+
-  geom_label2(aes(subset=node == lin1.node-1), fill = "lightgrey", label = "Lineage 1", hjust = 1.5) + 
-  geom_label2(aes(subset=node == lin2.node-1), fill = "lightgrey", label = "Lineage 2", hjust = 1.5) 
+
+p.vdah <- ggtree(ggt) +
+  geom_label2(aes(subset=node == lin1.node), fill = "lightgrey", label = "Lineage 1",
+              hjust = 1.5, vjust = -0.2) + 
+  geom_label2(aes(subset=node == lin2.node), fill = "lightgrey", label = "Lineage 2",
+              hjust = 1.5, vjust = -0.2) 
 
 p.vdah
 
@@ -85,14 +87,19 @@ p.lin.ratio
 image.map = image_scale(map.raw, "1100")
 print(image.map)
 
+fig <- image_graph(width = 1200, height = 1000, res = 110)
+ggarrange(ggplot()+theme_void(),ggpubr::ggarrange(p.vdah, p.lin.ratio,
+                                                  ncol = 2,labels = c("B","C")),
+          nrow = 2, labels = c("A","")) 
+
 
 out <- image_composite(image = fig, composite_image=image.map,offset = "+50-50")
 print(out)
 
 
+image_write(image = out,path = "figure_1.png",format = "png",quality = 100)
 
-
-
+image_write(image = out,path = "figure_1.svg",format = "svg",density = "200x200")
 
 
 
