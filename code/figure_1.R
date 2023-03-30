@@ -13,7 +13,7 @@ theme_set(theme_classic())
 
 map.raw <- image_read("data/map/map_Vdahliae_600dpi.tif")
 
-tree <- read.tree("data/new_data/tree_aboot_gi_vcf.tree")
+tree <- read.tree("data/tree/tree_aboot_gi_vcf.tree")
 pop.data <- read_tsv(file = "data/pop.data.tsv")
 
 
@@ -48,13 +48,9 @@ ggtree(ggt) +
   geom_text(aes(label = node), size = 3.5)
 
 
-
-
-
 ### Full tree
 
-
-p.vdah <- ggtree(ggt) +
+p.vdah <- ggtree(ggt,size = 0.2) +
   geom_label2(aes(subset=node == lin1.node), fill = "lightgrey", label = "Lineage 1",
               hjust = 1.5, vjust = -0.2) + 
   geom_label2(aes(subset=node == lin2.node), fill = "lightgrey", label = "Lineage 2",
@@ -75,31 +71,36 @@ p.lin.ratio <- ggt %>%
   group_by(province) %>% 
   mutate(lin_ratio = n / sum(n), prov_n = sum(n)) %>% 
   ggplot(aes(x = province,fill = lineage,y = lin_ratio))+
-  geom_label(aes(label = paste0("n=",prov_n)), y = 1, vjust = -0.1, color = "black", fill = "grey")+
+  geom_label(aes(label = paste0("n=",prov_n)), y = 1, vjust = -0.1,
+             color = "black", fill = "grey", size = 2.5)+
   geom_col() + 
-  ylim(c(0,1.1))+
   scale_fill_manual(values = c("#c8c8c8","#646464"))+
+  scale_y_continuous(breaks=seq(0,1.2,0.25),limits=c(0, 1.1))+
   labs(y = "Sample ratio")
 
 p.lin.ratio
 
 
-image.map = image_scale(map.raw, "1100")
+image.map = image_scale(map.raw,geometry = "4000x1425")
 print(image.map)
 
-fig <- image_graph(width = 1200, height = 1000, res = 110)
-ggarrange(ggplot()+theme_void(),ggpubr::ggarrange(p.vdah, p.lin.ratio,
-                                                  ncol = 2,labels = c("B","C")),
-          nrow = 2, labels = c("A","")) 
+windowsFonts("Arial" = windowsFont("Arial"))
 
 
-out <- image_composite(image = fig, composite_image=image.map,offset = "+50-50")
-print(out)
+fig <- image_graph(width = 4200, height = 3500, res = 600)
+ggarrange(ggplot()+theme_void(),
+          ggpubr::ggarrange(p.vdah, p.lin.ratio, ncol = 2,labels = c("B","C"),font.label = list(family = "Arial",font = "Arial",size = 14)),
+          nrow = 2, labels = c("A",""),font.label = list(family = "Arial",size = 14,face="bold"))
+
+dev.off()
+out <- image_composite(image = fig, composite_image=image.map,offset = "+100-200")
 
 
-image_write(image = out,path = "figure_1.png",format = "png",quality = 100)
+image_ggplot(out) %>% 
+  ggsave(filename = "fig_1.tiff", path = "results",width = 7, height = 5.833,
+         units = "in",device = "tiff",dpi = 600,compression = "lzw")
 
-image_write(image = out,path = "figure_1.svg",format = "svg",density = "200x200")
+
 
 
 

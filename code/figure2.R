@@ -56,16 +56,16 @@ g <- get.data.frame(l1_min_span_net_clust$graph) %>%
 #graph for groups
 a <- ggplot(layout, aes(x = x, y = y, color = grp)) +   
   geom_segment(data=g,aes(x=x_from,xend = x_to, y=y_from,yend = y_to),
-               inherit.aes = FALSE,linewidth = 2)+  
-  geom_point( size = 3) +  
+               inherit.aes = FALSE,linewidth = 1)+  
+  geom_point( size = 1.5) +  
   scale_color_manual(values = c("darkgrey","red","blue"))+
   labs(x="", y="", color="Group")
 
 #graph for provinces
 b <- ggplot(layout, aes(x = x, y = y, color = province)) +   
   geom_segment(data=g,aes(x=x_from,xend = x_to, y=y_from,yend = y_to),
-               inherit.aes = FALSE,linewidth = 2)+  
-  geom_point( size = 3) +  
+               inherit.aes = FALSE,linewidth = 1)+  
+  geom_point( size = 1.5) +  
   scale_color_manual(values = pal)+
   labs(x="", y="", color="Province")
 
@@ -108,20 +108,23 @@ g <- get.data.frame(l2_min_span_net_clust$graph) %>%
 #graph for groups
 c <- ggplot(layout, aes(x = x, y = y, color = grp)) +   
   geom_segment(data=g,aes(x=x_from,xend = x_to, y=y_from,yend = y_to),
-               inherit.aes = FALSE,linewidth = 2)+  
-  geom_point( size = 3) +  
+               inherit.aes = FALSE,linewidth = 1)+  
+  geom_point( size = 1.5) +  
   scale_color_manual(values = c("blue","red","darkgrey", "darkgreen", "orange","grey25"))+
   labs(x="", y="", color="Group")
 
 #graph for provinces
 d <- ggplot(layout, aes(x = x, y = y, color = province)) +   
   geom_segment(data=g,aes(x=x_from,xend = x_to, y=y_from,yend = y_to),
-               inherit.aes = FALSE,linewidth = 2)+  
-  geom_point( size = 3) +  
+               inherit.aes = FALSE,linewidth = 1)+  
+  geom_point( size = 1.5) +  
   scale_color_manual(values = pal)+
   labs(x="", y="", color="Province")
 
 
 #multiplot arrangment
-ggarrange(a,b,c,d,ncol = 2,nrow = 2, labels = c("A","B","C","D"))
-ggsave("multipanel.jpeg", width = 14, height = 8,dpi = 300)
+windowsFonts("Arial" = windowsFont("Arial"))
+ggarrange(a,b,c,d,ncol = 2,nrow = 2, labels = c("A","B","C","D"),
+          font.label = list(family = "Arial",size = 14,face="bold"))
+ggsave("fig_2.tiff",path = "results",compression = "lzw", width = 7, height = 5,
+       units = "in",dpi = 600)
